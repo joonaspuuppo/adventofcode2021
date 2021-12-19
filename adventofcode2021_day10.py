@@ -1,9 +1,10 @@
-from os import closerange
+import statistics
 
 
 CLOSING_CHARACTERS = ")]}>"
 OPENING_CHARACTERS = "([{<"
 ERROR_POINTS = [3, 57, 1197, 25137]
+COMPLETION_POINTS = [1, 2, 3, 4]
 
 def read_lines_from_file(filename):
     file = open(filename, "r")
@@ -11,7 +12,7 @@ def read_lines_from_file(filename):
     file.close()
     return lines
 
-def is_legal(line, i, errors):
+def is_legal(line, i, errors, completions):
     if is_closing_character(line[i]):
         print("Not an opening character!")
         return False
@@ -27,12 +28,20 @@ def is_legal(line, i, errors):
             opening_chars.append(char)
         else:
             if char != closing_char:
-                print("Expected {} but found {} instead".format(closing_char, char))
+                #print("Expected {} but found {} instead".format(closing_char, char))
                 errors.append(char)
                 return False
             else:
                 #print("Chunk OK!")
                 opening_chars.pop()
+    if len(opening_chars) != 0:
+        completion = []
+        while len(opening_chars) > 0:
+            char = opening_chars.pop()
+            completion.append(find_pair(char))
+        completions.append(completion)
+
+
     return True
 
 
@@ -58,13 +67,30 @@ def is_opening_character(char):
 
 lines = read_lines_from_file("adventofcode2021_day10_input.txt")
 errors = []
+completions = []
 for line in lines:
-    is_legal(line, 0, errors)
+    is_legal(line, 0, errors, completions)
 
 sum = 0
 for error in errors:
     for i in range(len(ERROR_POINTS)):
         if error == CLOSING_CHARACTERS[i]:
             sum += ERROR_POINTS[i]
-print(sum)
+print("Part one: ", sum)
+
+sums = []
+for completion in completions:
+    sum = 0
+    for char in completion:
+        sum = sum * 5
+        for i in range(len(COMPLETION_POINTS)):
+            if char == CLOSING_CHARACTERS[i]:
+                sum += COMPLETION_POINTS[i]
+    sums.append(sum)
+
+print("Part 2: ", statistics.median(sums))
+
+
+                
+
 
